@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>jQuery get text box value example</title>
+
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>
+
+</head>
+
+<body>
+
+<h1>jQuery get text box value example</h1>
+
+<div><h2>TextBox value : <label id="msg"></label></h2></div>
+
+<div style="padding:16px;">
+	hadoop jar : <input id="hadoopJar" type="textbox" value=""></input>
+	main class : <input id="mainClass" type="textbox" value=""></input>
+	-D args : <input id="dArgs" type="textbox" value=""></input>
+	-libjars : <input id="libjars" type="textbox" value=""></input>
+	args : <input id="args" type="textbox" value=""></input>
+</div>
+
+<button id="executeMRJob">Execute</button>
+
+<script type="text/javascript">
+    $("button:#executeMRJob").click(function () 
+      {
+       //create JSON
+       var jsonRequest= {
+		    "hadoopjar": $('#hadoopJar').val(),
+		    "mainclass": $('#mainClass').val(),
+		    "dargs":""  ,
+		    "libjar":"",
+		    "args": [
+		        "wordcount.txt",
+		        "wordcount/output" 
+		    ]
+		};
+      	$.ajax({ 
+		    type: "POST", 
+			url: "executeHadopMRJob", 
+			data: JSON.stringify(jsonRequest),
+			contentType: "application/json; charset=utf-8", 
+			dataType: "json", 
+			success: function(result)
+			{ 
+			    $('#msg').html(result);
+			}, 
+			error: function(result) 
+			{ 
+			    alert("jQuery Error:" + result); 
+			} 
+        });
+    });
+
+</script>
+
+</body>
+</html>
