@@ -24,13 +24,12 @@
 <button id="executeMRJob">Execute</button>
 
 <script type="text/javascript">
-    $("button:#executeMRJob").click(function () 
-      {
+    $("button:#executeMRJob").click(function(){
        //create JSON
        var jsonRequest= {
 		    "hadoopjar": $('#hadoopJar').val(),
 		    "mainclass": $('#mainClass').val(),
-		    "dargs":""  ,
+		    "dargs":"" ,
 		    "libjar":"",
 		    "args": [
 		        "wordcount.txt",
@@ -39,17 +38,18 @@
 		};
       	$.ajax({ 
 		    type: "POST", 
-			url: "executeHadopMRJob", 
+			url: "http://localhost:8080/executeHadopMRJob", 
 			data: JSON.stringify(jsonRequest),
 			contentType: "application/json; charset=utf-8", 
 			dataType: "json", 
-			success: function(result)
+			success: function(jsonRequest)
 			{ 
-			    $('#msg').html(result);
+			    $('#msg').html(jsonRequest);
+			   
 			}, 
-			error: function(result) 
+			error: function(jsonRequest) 
 			{ 
-			    alert("jQuery Error:" + result); 
+			    alert("jQuery Error:" + jsonRequest); 
 			} 
         });
     });

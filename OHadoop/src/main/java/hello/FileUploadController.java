@@ -23,15 +23,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+//import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-
 @Controller
 @RequestMapping("/")
-public class FileUploadController<HttpServerResponse, mv> 
-{
+public class FileUploadController<HttpServerResponse, mv> {
 
 	private static final Logger log = LoggerFactory.getLogger(FileUploadController.class);
 
@@ -45,27 +44,27 @@ public class FileUploadController<HttpServerResponse, mv>
 	}
 
 	@RequestMapping(method = RequestMethod.GET, value = "/")
-	public String provideUploadInfo(Model model) throws IOException 
-	{
+	public String provideUploadInfo(Model model) throws IOException {
 
-		model.addAttribute("files", Files.walk(Paths.get(ROOT))
-				.filter(path -> !path.equals(Paths.get(ROOT)))
-				.map(path -> Paths.get(ROOT).relativize(path))
-				.map(path -> linkTo(methodOn(FileUploadController.class).getFile(path.toString())).withRel(path.toString()))
-				.collect(Collectors.toList()));
+		model.addAttribute("files",
+				Files.walk(Paths.get(ROOT)).filter(path -> !path.equals(Paths.get(ROOT)))
+						.map(path -> Paths.get(ROOT).relativize(path))
+						.map(path -> linkTo(methodOn(FileUploadController.class).getFile(path.toString()))
+								.withRel(path.toString()))
+						.collect(Collectors.toList()));
 
 		return "uploadForm";
 	}
-	
-	@RequestMapping(method = RequestMethod.GET, value = "/executeHadopMRJobPage")
-	public String provideexecuteHadopMRJobPage(Model model) throws IOException 
-	{
 
-		model.addAttribute("files", Files.walk(Paths.get(ROOT))
-				.filter(path -> !path.equals(Paths.get(ROOT)))
-				.map(path -> Paths.get(ROOT).relativize(path))
-				.map(path -> linkTo(methodOn(FileUploadController.class).getFile(path.toString())).withRel(path.toString()))
-				.collect(Collectors.toList()));
+	@RequestMapping(method = RequestMethod.GET, value = "/executeHadopMRJobPage")
+	public String provideexecuteHadopMRJobPage(Model model) throws IOException {
+
+		model.addAttribute("files",
+				Files.walk(Paths.get(ROOT)).filter(path -> !path.equals(Paths.get(ROOT)))
+						.map(path -> Paths.get(ROOT).relativize(path))
+						.map(path -> linkTo(methodOn(FileUploadController.class).getFile(path.toString()))
+								.withRel(path.toString()))
+						.collect(Collectors.toList()));
 
 		return "TestTextBoxRead";
 	}
@@ -82,30 +81,32 @@ public class FileUploadController<HttpServerResponse, mv>
 	}
 
 	@RequestMapping(method = RequestMethod.POST, value = "/")
-	public String handleFileUpload(@RequestParam("file") MultipartFile file,
-								   RedirectAttributes redirectAttributes) {
+	public String handleFileUpload(@RequestParam("file") MultipartFile file, RedirectAttributes redirectAttributes) {
 
 		if (!file.isEmpty()) {
 			try {
 				Files.copy(file.getInputStream(), Paths.get(ROOT, file.getOriginalFilename()));
 				redirectAttributes.addFlashAttribute("message",
 						"You successfully uploaded " + file.getOriginalFilename() + "!");
-			} catch (IOException|RuntimeException e) {
-				redirectAttributes.addFlashAttribute("message", "Failued to upload " + file.getOriginalFilename() + " => " + e.getMessage());
+			} catch (IOException | RuntimeException e) {
+				redirectAttributes.addFlashAttribute("message",
+						"Failued to upload " + file.getOriginalFilename() + " => " + e.getMessage());
 			}
 		} else {
-			redirectAttributes.addFlashAttribute("message", "Failed to upload " + file.getOriginalFilename() + " because it was empty");
+			redirectAttributes.addFlashAttribute("message",
+					"Failed to upload " + file.getOriginalFilename() + " because it was empty");
 		}
 
 		return "redirect:/";
 	}
 	
-	@RequestMapping(value ="/executeHadopMRJob",method = RequestMethod.POST)
-	@ResponseBody
-	public String executeHadoopMRjob( HadoopMRDetails jsonString)
-	{
-	    //do business logic
-	    return jsonString.toString();
-	}
+	@RequestMapping(value = "/executeHadopMRJob", method = RequestMethod.POST)
 	
+	
+	public @ResponseBody String executeHadoopMRjob(@RequestBody HadoopMRDetails jsonString)
+	{
+		// do business logic
+		return jsonString.toString();
+	}
+
 }
