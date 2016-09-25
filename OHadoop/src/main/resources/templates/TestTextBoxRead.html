@@ -14,8 +14,8 @@
 <div><h2>TextBox value : <label id="msg"></label></h2></div>
 
 <div style="padding:16px;">
-	hadoop jar : <input id="hadoopJar" type="textbox" value=""></input>
-	main class : <input id="mainClass" type="textbox" value=""></input>
+	hadoop jar : <input id="hadoopJar" type="textbox" value="/home/cloudera/Downloads/hadoop_tutorial/WordCount1/wordcount.jar"></input>
+	main class : <input id="mainClass" type="textbox" value="org.myorg.WordCount"></input>
 	-D args : <input id="dArgs" type="textbox" value=""></input>
 	-libjars : <input id="libjars" type="textbox" value=""></input>
 	args : <input id="args" type="textbox" value=""></input>
@@ -24,12 +24,13 @@
 <button id="executeMRJob">Execute</button>
 
 <script type="text/javascript">
-    $("button:#executeMRJob").click(function(){
+    $("button:#executeMRJob").click(function () 
+      {
        //create JSON
        var jsonRequest= {
 		    "hadoopjar": $('#hadoopJar').val(),
 		    "mainclass": $('#mainClass').val(),
-		    "dargs":"" ,
+		    "dargs":""  ,
 		    "libjar":"",
 		    "args": [
 		        "wordcount.txt",
@@ -38,23 +39,63 @@
 		};
       	$.ajax({ 
 		    type: "POST", 
-			url: "http://localhost:8080/executeHadopMRJob", 
+			url: "executeHadopMRJob", 
 			data: JSON.stringify(jsonRequest),
 			contentType: "application/json; charset=utf-8", 
-			dataType: "json", 
-			success: function(jsonRequest)
+			//dataType: "text", 
+			
+			success: function(response)
 			{ 
-			    $('#msg').html(jsonRequest);
-			   
+				alert("jQuery success:" + response)
 			}, 
-			error: function(jsonRequest) 
+			error: function(e) 
 			{ 
-			    alert("jQuery Error:" + jsonRequest); 
-			} 
+				alert("jQuery error:" + e)
+			    //alert("jQuery Error:" + result); 
+			},
+			
         });
     });
+    
+    function updatePage(){
+    	$.ajax({
+	        type:"GET",
+	       // contentType: "text/plain; charset=utf-8",
+	        url: "gethadoopMRjoboutput",
+	       // dataType: "String",
+	        
+	        success : function (returneddata){
+	        	
+	            $("#myResponse3out").html(returneddata);
+	            //alert("  sss  "+result);
+	        },
+	        error: function(e) {
+	            //alert('error ' + textStatus + " " + errorThrown);
+	        }
+	        
 
+	    })
+    }
+    setInterval(updatePage, 1000);
+   
+
+   
 </script>
+
+<p>Standard Output</p>
+
+<textarea rows="10" cols="180" id="myResponse3out">
+
+</textarea>
+
+
+
+<p>Standard Error</p>
+
+<div>
+<textarea rows="10" cols="180" id="stdoutput">
+</textarea>
+</div>
 
 </body>
 </html>
