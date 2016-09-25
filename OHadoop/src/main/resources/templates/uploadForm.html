@@ -1,6 +1,10 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
-<h1><center>ONLINE MAP REDUCE RUNNING TOOL</center></h1>
+
+<h1><center>ONLINE MAP REDUCE RUNNING TOOL</center>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>
+
+</h1>
  
 	<div th:if="${message}">
 		<h2 th:text="${message}"/>
@@ -32,10 +36,82 @@
 		</form>
 	   
 	</div>
-	<div>
-	<button>execute </button>
-	</div>
 	
+	
+	<div><h2>Hadoop value : <label id="msg"></label></h2></div>
+
+<div style="padding:16px;">
+	hadoop jar : <input id="hadoopJar" type="textbox" value="/home/cloudera/Downloads/hadoop_tutorial/WordCount1/wordcount.jar"></input>
+	main class : <input id="mainClass" type="textbox" value="org.myorg.WordCount"></input>
+	-D args : <input id="dArgs" type="textbox" value=""></input>
+	-libjars : <input id="libjars" type="textbox" value=""></input>
+	args : <input id="args" type="textbox" value=""></input>
+</div>
+
+<button id="executeMRJob">Execute</button>
+
+<script type="text/javascript">
+    $("button:#executeMRJob").click(function () 
+      {
+       //create JSON
+       var jsonRequest= {
+		    "hadoopjar": $('#hadoopJar').val(),
+		    "mainclass": $('#mainClass').val(),
+		    "dargs":""  ,
+		    "libjar":"",
+		    "args": [
+		        "wordcount.txt",
+		        "wordcount/output" 
+		    ]
+		};
+      	$.ajax({ 
+		    type: "POST", 
+			url: "executeHadopMRJob", 
+			data: JSON.stringify(jsonRequest),
+			contentType: "application/json; charset=utf-8", 
+			//dataType: "text", 
+			
+			success: function(response)
+			{ 
+				alert("jQuery success:" + response)
+			}, 
+			error: function(e) 
+			{ 
+				alert("jQuery error:" + e)
+			    //alert("jQuery Error:" + result); 
+			},
+			
+        });
+    });
+    
+    function updateOutputWindow(){
+    	$.ajax({
+	        type:"GET",
+	       // contentType: "text/plain; charset=utf-8",
+	        url: "gethadoopMRjoboutput",
+	       // dataType: "String",
+	        
+	        success : function (returneddata){
+	        	
+	            $("#myResponse3out").html(returneddata);
+	            //alert("  sss  "+result);
+	        },
+	        error: function(e) {
+	            //alert('error ' + textStatus + " " + errorThrown);
+	        }
+	        
+
+	    })
+    }
+    setInterval(updateOutputWindow, 1000);
+   
+
+   
+</script>
+
+<p>Standard Output</p>
+<textarea rows="10" cols="180" id="myResponse3out">
+</textarea>
  
 </body> 
 </html>

@@ -57,7 +57,7 @@
         });
     });
     
-    function updatePage(){
+    function updateOutputWindow(){
     	$.ajax({
 	        type:"GET",
 	       // contentType: "text/plain; charset=utf-8",
@@ -76,26 +76,14 @@
 
 	    })
     }
-    setInterval(updatePage, 1000);
+    setInterval(updateOutputWindow, 1000);
    
 
    
 </script>
 
 <p>Standard Output</p>
-
 <textarea rows="10" cols="180" id="myResponse3out">
-
 </textarea>
-
-
-
-<p>Standard Error</p>
-
-<div>
-<textarea rows="10" cols="180" id="stdoutput">
-</textarea>
-</div>
-
 </body>
 </html>

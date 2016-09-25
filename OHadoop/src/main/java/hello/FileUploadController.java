@@ -68,14 +68,8 @@ public class FileUploadController<HttpServerResponse, mv>
 	@RequestMapping(method = RequestMethod.GET, value = "/executeHadopMRJobPage")
 	public String provideexecuteHadopMRJobPage(Model model) throws IOException 
 	{
-
-		model.addAttribute("files", Files.walk(Paths.get(ROOT))
-				.filter(path -> !path.equals(Paths.get(ROOT)))
-				.map(path -> Paths.get(ROOT).relativize(path))
-				.map(path -> linkTo(methodOn(FileUploadController.class).getFile(path.toString())).withRel(path.toString()))
-				.collect(Collectors.toList()));
-
-		return "TestTextBoxRead";
+	
+		return "uploadForm";
 	}
 
 	@RequestMapping(method = RequestMethod.GET, value = "/{filename:.+}")
