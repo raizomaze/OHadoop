@@ -93,7 +93,8 @@
 	        
 	        success : function (returneddata){
 	        	
-	            $("#myResponse3out").html(returneddata);
+	        	$("#myResponse3out").html(returneddata);
+	            scrollToBottom();
 	            //alert("  sss  "+result);
 	        },
 	        error: function(e) {
@@ -111,6 +112,7 @@
 
 <p>Standard Output</p>
 <textarea rows="10" cols="180" id="myResponse3out">
+ textarea.scrollTop = textarea.scrollHeight;
 </textarea>
  
 </body> 

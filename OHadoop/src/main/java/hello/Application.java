@@ -23,9 +23,9 @@ public class Application {
 	{
 		return (args) -> 
 		{
-            FileSystemUtils.deleteRecursively(new File(FileUploadController.ROOT));
+            FileSystemUtils.deleteRecursively(new File(FileUploadController.WORKING_DIR));
 
-            Files.createDirectory(Paths.get(FileUploadController.ROOT));
+            Files.createDirectory(Paths.get(FileUploadController.WORKING_DIR));
 		};
 	}
 }
