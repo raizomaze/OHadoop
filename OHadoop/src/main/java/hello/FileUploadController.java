@@ -36,6 +36,8 @@ import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
 
+import groovyjarjarantlr.StringUtils;
+
 @Controller
 @RequestMapping("/")
 public class FileUploadController<HttpServerResponse, mv> {
@@ -49,7 +51,9 @@ public class FileUploadController<HttpServerResponse, mv> {
 	private final ResourceLoader resourceLoader;
 
 	private final static StringBuilder runtimeOutput = new StringBuilder("Output>>\n");
-
+    private static String runtimeOutputOld = "";
+    
+    
 	@Autowired
 	public FileUploadController(ResourceLoader resourceLoader) {
 		this.resourceLoader = resourceLoader;
@@ -256,7 +260,7 @@ public class FileUploadController<HttpServerResponse, mv> {
 
 				String hadoopjar = hadoopdetails.getHadoopjar();
 				String mainclass = hadoopdetails.getMainclass();
-				String hadoopMRcommand = "hadoop fs -rmr /user/cloudera/wordcount/output;hadoop jar " + hadoopjar + " " + mainclass
+				String hadoopMRcommand = "hadoop fs -rmr /user/cloudera/wordcount/output > /dev/null 2>&1;hadoop jar " + hadoopjar + " " + mainclass
 						+ " /user/cloudera/wordcount/input /user/cloudera/wordcount/output";
 				System.out.println("Hadoop command:" + hadoopMRcommand);
 				// return hadoopMRcommand;
@@ -360,7 +364,20 @@ public class FileUploadController<HttpServerResponse, mv> {
 		 * String mRJobOutput = runtimeOutput.toString(); if
 		 * (mRJobOutput.isEmpty()) { return "No output"; }
 		 */
+		//take the difference between runtimeOutput and runtimeOutputOld to get only 
+		// the latest updated text
+		//String latestTextOnly = getTextDifferece(runtimeOutput.toString(), runtimeOutputOld);
+		//take backup of current runtimeOutput
+		//runtimeOutputOld = runtimeOutput.toString();
 		return runtimeOutput.toString();
+	//}
+
+	//private String getTextDifferece(String newText, String oldText) {
+		//e.g.: newText = "abcdxyz", oldText="abcd"
+		//we want the latest text i.e. newText - oldText
+		//return StringUtils.stripFront(newText, oldText);
+		
+		
 	}
 
 }
