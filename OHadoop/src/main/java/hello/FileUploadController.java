@@ -43,6 +43,8 @@ public class FileUploadController<HttpServerResponse, mv> {
 	private static final Logger log = LoggerFactory.getLogger(FileUploadController.class);
 
 	public static final String WORKING_DIR = "upload-dir";
+	public static final String WORKING_DIR_Input = "upload-inputdir";
+	
 
 	private final ResourceLoader resourceLoader;
 
@@ -65,6 +67,19 @@ public class FileUploadController<HttpServerResponse, mv> {
 
 		return "uploadForm";
 	}
+	
+	@RequestMapping(method = RequestMethod.GET, value = "/in")
+	public String provideUploadInfo1(Model model) throws IOException {
+
+		model.addAttribute("files",
+				Files.walk(Paths.get(WORKING_DIR_Input)).filter(path -> !path.equals(Paths.get(WORKING_DIR_Input)))
+						.map(path -> Paths.get(WORKING_DIR_Input).relativize(path))
+						.map(path -> linkTo(methodOn(FileUploadController.class).getFile(path.toString()))
+								.withRel(path.toString()))
+						.collect(Collectors.toList()));
+
+		return "uploadForm";
+	}
 
 	@RequestMapping(method = RequestMethod.GET, value = "/executeHadopMRJobPage")
 	public String provideexecuteHadopMRJobPage(Model model) throws IOException {
@@ -72,7 +87,7 @@ public class FileUploadController<HttpServerResponse, mv> {
 		return "uploadForm";
 	}
 
-	@RequestMapping(method = RequestMethod.GET, value = "/{filename:.+}")
+	@RequestMapping(method = RequestMethod.GET, value = "/{filename: =+}")
 	@ResponseBody
 	public ResponseEntity<?> getFile(@PathVariable String filename) {
 
@@ -112,6 +127,7 @@ public class FileUploadController<HttpServerResponse, mv> {
 					session.setConfig(config);
 					session.connect();
 					channel = session.openChannel("sftp");
+					
 					channel.connect();
 					channelSftp = (ChannelSftp) channel;
 					// channelSftp.cd(SFTPWORKINGDIR);
@@ -119,6 +135,7 @@ public class FileUploadController<HttpServerResponse, mv> {
 					System.out.println("Jar file to be copied:" + jarFile.getAbsolutePath());
 					if (jarFile.isFile()) {
 						channelSftp.put(new FileInputStream(jarFile), SFTPWORKINGDIR + "/" + originalFilename);
+						
 					} else {
 						System.out.println("Jar file not available!");
 					}
@@ -139,6 +156,85 @@ public class FileUploadController<HttpServerResponse, mv> {
 		return "redirect:/";
 	}
 
+	@RequestMapping(method = RequestMethod.GET, value = "/{filename:: =+}")
+	@ResponseBody
+	public ResponseEntity<?> getFile1(@PathVariable String filename) {
+
+		try {
+			return ResponseEntity.ok(resourceLoader.getResource("file:" + Paths.get(WORKING_DIR_Input, filename).toString()));
+		} catch (Exception e) {
+			return ResponseEntity.notFound().build();
+		}
+	}
+	
+	@RequestMapping(method = RequestMethod.POST, value = "/in")
+	public String handleFileUploadInput(@RequestParam("file") MultipartFile file, RedirectAttributes redirectAttributes) {
+		File workingDir = new File(WORKING_DIR_Input);
+		System.out.println("current working directory:" + workingDir.getAbsolutePath());
+		String originalFilename = file.getOriginalFilename();
+		if (!file.isEmpty()) {
+			try {
+				Files.copy(file.getInputStream(), Paths.get(WORKING_DIR_Input, originalFilename));
+				redirectAttributes.addFlashAttribute("message", "You successfully uploaded " + originalFilename + "!");
+
+				String SFTPHOST = "192.168.43.111";
+				int SFTPPORT = 22;
+				String SFTPUSER = "cloudera";
+				String SFTPPASS = "cloudera";
+				String SFTPWORKINGDIR = "/var/tmp";
+
+				Session session = null;
+				Channel channel = null;
+				ChannelSftp channelSftp = null;
+				
+
+				try {
+					JSch jsch = new JSch();
+					session = jsch.getSession(SFTPUSER, SFTPHOST, SFTPPORT);
+					session.setPassword(SFTPPASS);
+					java.util.Properties config = new java.util.Properties();
+					config.put("StrictHostKeyChecking", "no");
+					session.setConfig(config);
+					session.connect();
+					channel = session.openChannel("sftp");
+					channel.connect();
+					channelSftp = (ChannelSftp) channel;
+					// channelSftp.cd(SFTPWORKINGDIR);
+					File inputFile = new File(workingDir.getAbsolutePath() + "/" + originalFilename);
+					System.out.println("Input file to be copied:" + inputFile.getAbsolutePath());
+					if (inputFile.isFile()) {
+						channelSftp.put(new FileInputStream(inputFile), SFTPWORKINGDIR + "/" + originalFilename);
+						channelSftp.disconnect();
+						ChannelExec channelExec= (ChannelExec) session.openChannel("exec");
+						String hadoopPutCommand = "hadoop fs -rm /user/cloudera/wordcount/input/"+ originalFilename + ";hadoop fs -put /var/tmp/"+originalFilename+ " /user/cloudera/wordcount/input/"+ originalFilename;
+						System.out.println("Command to execute: " + hadoopPutCommand);
+						channelExec.setCommand(hadoopPutCommand);
+						channelExec.connect();
+						int exitStatus = channelExec.getExitStatus();
+						System.out.println("Hadoop put command exited with status: " + exitStatus);
+                        channelExec.disconnect();
+					} else {
+						System.out.println("Input file not available!");
+					}
+
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+
+			} catch (IOException | RuntimeException e) {
+				redirectAttributes.addFlashAttribute("message",
+						"Failued to upload or file already exist " + originalFilename + " => " + e.getMessage());
+			}
+		} else {
+			redirectAttributes.addFlashAttribute("message",
+					"Failed to upload " + originalFilename + " because it was empty");
+		}
+
+		return "redirect:/in";
+	}
+	
+	
+	
 	@RequestMapping(value = "/executeHadopMRJob", method = RequestMethod.POST)
 
 	public @ResponseBody String executeHadoopMRjob(@RequestBody HadoopMRDetails hadoopdetails) {
@@ -160,7 +256,7 @@ public class FileUploadController<HttpServerResponse, mv> {
 
 				String hadoopjar = hadoopdetails.getHadoopjar();
 				String mainclass = hadoopdetails.getMainclass();
-				String hadoopMRcommand = "hadoop jar " + hadoopjar + " " + mainclass
+				String hadoopMRcommand = "hadoop fs -rmr /user/cloudera/wordcount/output;hadoop jar " + hadoopjar + " " + mainclass
 						+ " /user/cloudera/wordcount/input /user/cloudera/wordcount/output";
 				System.out.println("Hadoop command:" + hadoopMRcommand);
 				// return hadoopMRcommand;

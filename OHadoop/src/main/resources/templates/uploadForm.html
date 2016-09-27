@@ -1,11 +1,11 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
 
-<h1><center>ONLINE MAP REDUCE RUNNING TOOL</center>
+<h1><center>ONLINE HADOOP MAP REDUCE RUNNING TOOL</center>
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>
 
 </h1>
- 
+  
 	<div th:if="${message}">
 		<h2 th:text="${message}"/>
 	</div>
@@ -22,27 +22,26 @@
 	<div>
 		<ul>
 			<li th:each="file : ${files}">
-				<a th:href="${file.href}" th:text="${file.rel}" />
+				<a th:href="${file.href}"  th:text="${file.rel}" />
 			</li>
 		</ul>
 	</div>
 	
 	<div>
-	     <form method="POST" enctype="multipart/form-data" action="/">
+	     <form method="POST" enctype="multipart/form-data" action="/in">
+	      
 			<table>
 				<tr><td>Upload input file for arguments:</td><td><input type="file" name="file" /></td></tr>
 				<tr><td></td><td><input type="submit" value="Uploadinput" /></td></tr>
 			</table>
 		</form>
-	   
 	</div>
-	
 	
 	<div><h2>Hadoop value : <label id="msg"></label></h2></div>
 
 <div style="padding:16px;">
-	hadoop jar : <input id="hadoopJar" type="textbox" value="/home/cloudera/Downloads/hadoop_tutorial/WordCount1/wordcount.jar"></input>
-	main class : <input id="mainClass" type="textbox" value="org.myorg.WordCount"></input>
+	hadoop jar : <input id="hadoopJar" type="textbox" value=""></input>
+	main class : <input id="mainClass" type="textbox" value=""></input>
 	-D args : <input id="dArgs" type="textbox" value=""></input>
 	-libjars : <input id="libjars" type="textbox" value=""></input>
 	args : <input id="args" type="textbox" value=""></input>
@@ -55,7 +54,7 @@
       {
        //create JSON
        var jsonRequest= {
-		    "hadoopjar": $('#hadoopJar').val(),
+		    "hadoopjar": "/var/tmp/"+$('#hadoopJar').val(),
 		    "mainclass": $('#mainClass').val(),
 		    "dargs":""  ,
 		    "libjar":"",
@@ -73,7 +72,7 @@
 			
 			success: function(response)
 			{ 
-				alert("jQuery success:" + response)
+				//alert("jQuery success:" + response)
 			}, 
 			error: function(e) 
 			{ 
@@ -84,6 +83,8 @@
         });
     });
     
+    
+   
     function updateOutputWindow(){
     	$.ajax({
 	        type:"GET",
@@ -93,8 +94,8 @@
 	        
 	        success : function (returneddata){
 	        	
-	        	$("#myResponse3out").html(returneddata);
-	            scrollToBottom();
+	        	$("#outputwindow").html(returneddata);
+	            
 	            //alert("  sss  "+result);
 	        },
 	        error: function(e) {
@@ -103,17 +104,20 @@
 	        
 
 	    })
+	    $('#outputwindow').scrollTop($('#outputwindow')[0].scrollHeight);
     }
+    
+    
     setInterval(updateOutputWindow, 1000);
    
-
    
 </script>
 
-<p>Standard Output</p>
-<textarea rows="10" cols="180" id="myResponse3out">
- textarea.scrollTop = textarea.scrollHeight;
+<p> Output</p>
+<textarea rows="10" cols="180" id="outputwindow">
 </textarea>
+ 
+ 
  
 </body> 
 </html>
